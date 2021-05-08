@@ -1,2 +1,5 @@
 # Auto_Nation
 RDBMS for Auto Nation with ERD
+
+Attached document will discuss the requirements, design, and implementation of my AutoNation database. It will elaborate on several steps taken to work on the project. It will be a guide for someone to use if they want to update the following project to add more functionality or to expand the database to include more data from other departments under AutoNation. The person should also be able to create the same project from scratch using this as a guide.  The purpose of this document serves as a written record to demonstrate the thinking process regarding the conceptual design, logical design, and implementation of the database, and to summarize the features implemented. We will start with explaining why we picked the project we picket. It will document the hardware and software requirement for the user to be able to recreate this system. In Requirement, we will emphasize on functional and database requirement to make sure that they are followed through this design and implementation. Each requirement will be implemented and tested at the end to make sure that the system has followed it. 
+
