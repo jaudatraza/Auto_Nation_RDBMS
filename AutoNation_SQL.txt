@@ -1,0 +1,854 @@
+-- MySQL Workbench Forward Engineering
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- Schema AutoNation
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Schema AutoNation
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `AutoNation` DEFAULT CHARACTER SET utf8 ;
+USE `AutoNation` ;
+
+-- -----------------------------------------------------
+-- Table `AutoNation`.`AutoNation`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `AutoNation`.`AutoNation` (
+  `Buisness_ID` INT NOT NULL,
+  `AutoNation_PhoneNumber` VARCHAR(13) NOT NULL,
+  PRIMARY KEY (`Buisness_ID`),
+  UNIQUE INDEX `AutoNation_PhoneNumber_UNIQUE` (`AutoNation_PhoneNumber` ASC) VISIBLE,
+  UNIQUE INDEX `AutoNation_Office_ID_UNIQUE` (`Buisness_ID` ASC) VISIBLE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `AutoNation`.`Address`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `AutoNation`.`Address` (
+  `Address_ID` INT NOT NULL AUTO_INCREMENT,
+  `Address_Street` VARCHAR(45) NOT NULL,
+  `Address_State` VARCHAR(2) NOT NULL,
+  `Address_County` VARCHAR(15) NULL DEFAULT NULL,
+  `Address_Zipcode` VARCHAR(5) NOT NULL,
+  PRIMARY KEY (`Address_ID`),
+  UNIQUE INDEX `Address_ID_UNIQUE` (`Address_ID` ASC) VISIBLE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `AutoNation`.`DealerShip`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `AutoNation`.`DealerShip` (
+  `DealerShip_ID` INT NOT NULL AUTO_INCREMENT,
+  `DealerShip_Ph` VARCHAR(13) NOT NULL,
+  `DealerShip_Name` VARCHAR(45) NOT NULL,
+  `Address_Address_ID` INT NOT NULL,
+  `AutoNation_Buisness_ID` INT NOT NULL,
+  PRIMARY KEY (`DealerShip_ID`, `AutoNation_Buisness_ID`),
+  INDEX `fk_DealerShip_Address1_idx` (`Address_Address_ID` ASC) VISIBLE,
+  UNIQUE INDEX `DealerShip_Ph_UNIQUE` (`DealerShip_Ph` ASC) VISIBLE,
+  UNIQUE INDEX `DealerShip_ID_UNIQUE` (`DealerShip_ID` ASC) VISIBLE,
+  INDEX `fk_DealerShip_AutoNation1_idx` (`AutoNation_Buisness_ID` ASC) VISIBLE,
+  CONSTRAINT `fk_DealerShip_Address1`
+    FOREIGN KEY (`Address_Address_ID`)
+    REFERENCES `AutoNation`.`Address` (`Address_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_DealerShip_AutoNation1`
+    FOREIGN KEY (`AutoNation_Buisness_ID`)
+    REFERENCES `AutoNation`.`AutoNation` (`Buisness_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `AutoNation`.`Customer`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `AutoNation`.`Customer` (
+  `Customer_ID` INT NOT NULL AUTO_INCREMENT,
+  `Customer_FNAME` VARCHAR(45) NOT NULL,
+  `Customer_LNAME` VARCHAR(45) NOT NULL,
+  `Customer_PH` VARCHAR(13) NOT NULL,
+  `Address_Address_ID` INT NOT NULL,
+  PRIMARY KEY (`Customer_ID`),
+  INDEX `fk_Customer_Address1_idx` (`Address_Address_ID` ASC) VISIBLE,
+  UNIQUE INDEX `Customer_PH_UNIQUE` (`Customer_PH` ASC) VISIBLE,
+  UNIQUE INDEX `Customer_ID_UNIQUE` (`Customer_ID` ASC) VISIBLE,
+  CONSTRAINT `fk_Customer_Address1`
+    FOREIGN KEY (`Address_Address_ID`)
+    REFERENCES `AutoNation`.`Address` (`Address_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `AutoNation`.`Employee`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `AutoNation`.`Employee` (
+  `Employee_ID` INT NOT NULL AUTO_INCREMENT,
+  `Employee_FNAME` VARCHAR(45) NOT NULL,
+  `Employee_LNAME` VARCHAR(45) NOT NULL,
+  `Employee_PH` VARCHAR(12) NOT NULL,
+  `Employee_SSN` VARCHAR(11) NOT NULL,
+  `DealerShip_DealerShip_ID` INT NOT NULL,
+  `Address_Address_ID` INT NOT NULL,
+  PRIMARY KEY (`Employee_ID`),
+  INDEX `fk_Employee_DealerShip1_idx` (`DealerShip_DealerShip_ID` ASC) VISIBLE,
+  INDEX `fk_Employee_Address1_idx` (`Address_Address_ID` ASC) VISIBLE,
+  UNIQUE INDEX `Employee_SSN_UNIQUE` (`Employee_SSN` ASC) VISIBLE,
+  UNIQUE INDEX `Employee_PH_UNIQUE` (`Employee_PH` ASC) VISIBLE,
+  UNIQUE INDEX `Employee_ID_UNIQUE` (`Employee_ID` ASC) VISIBLE,
+  UNIQUE INDEX `Address_Address_ID_UNIQUE` (`Address_Address_ID` ASC) VISIBLE,
+  CONSTRAINT `fk_Employee_DealerShip1`
+    FOREIGN KEY (`DealerShip_DealerShip_ID`)
+    REFERENCES `AutoNation`.`DealerShip` (`DealerShip_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Employee_Address1`
+    FOREIGN KEY (`Address_Address_ID`)
+    REFERENCES `AutoNation`.`Address` (`Address_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `AutoNation`.`Brand`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `AutoNation`.`Brand` (
+  `Brand_ID` INT NOT NULL AUTO_INCREMENT,
+  `Brand_Name` ENUM('Volkswagen', 'Toyota', 'Daimler', 'Ford', 'Honda', 'General Motors', 'SAIC', 'BMW', 'Volvo') NOT NULL,
+  `Brand_Country` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`Brand_ID`),
+  UNIQUE INDEX `Brand_ID_UNIQUE` (`Brand_ID` ASC) VISIBLE,
+  UNIQUE INDEX `Brand_Name_UNIQUE` (`Brand_Name` ASC) VISIBLE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `AutoNation`.`Vehicle`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `AutoNation`.`Vehicle` (
+  `Vehicle_ID` INT NOT NULL AUTO_INCREMENT,
+  `Vehicle_Type` ENUM('Sedan', 'Coupe', 'Sports', 'StationWagon', 'HatchBack', 'Luxury') NULL DEFAULT NULL,
+  `Vehicle_Door` ENUM('2', '4') NOT NULL,
+  `Vehicle_Year` YEAR(4) NULL DEFAULT 0000,
+  `Vehicle_VIN` VARCHAR(17) NOT NULL,
+  `Vehicle_Price` DECIMAL(8,2) UNSIGNED NOT NULL,
+  `DealerShip_DealerShip_ID` INT NOT NULL,
+  `Brand_Brand_ID` INT NOT NULL,
+  PRIMARY KEY (`Vehicle_ID`, `Brand_Brand_ID`, `DealerShip_DealerShip_ID`),
+  INDEX `fk_Vehicle_DealerShip1_idx` (`DealerShip_DealerShip_ID` ASC) VISIBLE,
+  INDEX `fk_Vehicle_Brand1_idx` (`Brand_Brand_ID` ASC) VISIBLE,
+  UNIQUE INDEX `Vehicle_ID_UNIQUE` (`Vehicle_ID` ASC) VISIBLE,
+  UNIQUE INDEX `Vehicle_VIN_UNIQUE` (`Vehicle_VIN` ASC) VISIBLE,
+  CONSTRAINT `fk_Vehicle_DealerShip1`
+    FOREIGN KEY (`DealerShip_DealerShip_ID`)
+    REFERENCES `AutoNation`.`DealerShip` (`DealerShip_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Vehicle_Brand1`
+    FOREIGN KEY (`Brand_Brand_ID`)
+    REFERENCES `AutoNation`.`Brand` (`Brand_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `AutoNation`.`Payment_Type`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `AutoNation`.`Payment_Type` (
+  `Payment_Type_ID` INT NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`Payment_Type_ID`),
+  UNIQUE INDEX `Payment_Type_ID_UNIQUE` (`Payment_Type_ID` ASC) VISIBLE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `AutoNation`.`Contract`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `AutoNation`.`Contract` (
+  `Contract_ID` INT NOT NULL AUTO_INCREMENT,
+  `Contract_Warranty` INT UNSIGNED NULL DEFAULT NULL,
+  `Contract_Insurance` TINYINT NULL DEFAULT 0,
+  `Payment_Type_Payment_Type_ID` INT NOT NULL,
+  `Employee_Employee_ID` INT NOT NULL,
+  `Customer_Customer_ID` INT NOT NULL,
+  `Vehicle_Vehicle_ID` INT NULL DEFAULT NULL,
+  PRIMARY KEY (`Contract_ID`),
+  UNIQUE INDEX `Contract_ID_UNIQUE` (`Contract_ID` ASC) VISIBLE,
+  INDEX `fk_Contract_Payment_Type1_idx` (`Payment_Type_Payment_Type_ID` ASC) VISIBLE,
+  INDEX `fk_Contract_Employee1_idx` (`Employee_Employee_ID` ASC) VISIBLE,
+  INDEX `fk_Contract_Customer1_idx` (`Customer_Customer_ID` ASC) VISIBLE,
+  INDEX `fk_Contract_Vehicle1_idx` (`Vehicle_Vehicle_ID` ASC) VISIBLE,
+  CONSTRAINT `fk_Contract_Payment_Type1`
+    FOREIGN KEY (`Payment_Type_Payment_Type_ID`)
+    REFERENCES `AutoNation`.`Payment_Type` (`Payment_Type_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Contract_Employee1`
+    FOREIGN KEY (`Employee_Employee_ID`)
+    REFERENCES `AutoNation`.`Employee` (`Employee_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Contract_Customer1`
+    FOREIGN KEY (`Customer_Customer_ID`)
+    REFERENCES `AutoNation`.`Customer` (`Customer_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Contract_Vehicle1`
+    FOREIGN KEY (`Vehicle_Vehicle_ID`)
+    REFERENCES `AutoNation`.`Vehicle` (`Vehicle_ID`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `AutoNation`.`Loan`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `AutoNation`.`Loan` (
+  `Loan_ID` INT NOT NULL AUTO_INCREMENT,
+  `Loan_Interest` DECIMAL(3,2) UNSIGNED NOT NULL,
+  `Loan_Term` ENUM('48', '60', '72') NOT NULL DEFAULT '60',
+  `Loan_Downpayment` DECIMAL(6,2) UNSIGNED NULL,
+  `Payment_Type_Payment_Type_ID` INT NOT NULL,
+  PRIMARY KEY (`Loan_ID`),
+  INDEX `fk_Loan_Payment_Type1_idx` (`Payment_Type_Payment_Type_ID` ASC) VISIBLE,
+  UNIQUE INDEX `Loan_ID_UNIQUE` (`Loan_ID` ASC) VISIBLE,
+  CONSTRAINT `fk_Loan_Payment_Type1`
+    FOREIGN KEY (`Payment_Type_Payment_Type_ID`)
+    REFERENCES `AutoNation`.`Payment_Type` (`Payment_Type_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `AutoNation`.`Lease`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `AutoNation`.`Lease` (
+  `Lease_ID` INT NOT NULL AUTO_INCREMENT,
+  `Lease_Term` ENUM('36', '48', '60') NOT NULL,
+  `Lease_Miles` ENUM('10000', '12000', '15000') NOT NULL DEFAULT '10000',
+  `Lease_Downpayment` DECIMAL(6,2) UNSIGNED NULL DEFAULT NULL,
+  `Lease_Residual` DECIMAL(4,2) UNSIGNED NOT NULL DEFAULT 62.00,
+  `Payment_Type_Payment_Type_ID` INT NOT NULL,
+  PRIMARY KEY (`Lease_ID`),
+  INDEX `fk_Lease_Payment_Type1_idx` (`Payment_Type_Payment_Type_ID` ASC) VISIBLE,
+  UNIQUE INDEX `Lease_ID_UNIQUE` (`Lease_ID` ASC) VISIBLE,
+  CONSTRAINT `fk_Lease_Payment_Type1`
+    FOREIGN KEY (`Payment_Type_Payment_Type_ID`)
+    REFERENCES `AutoNation`.`Payment_Type` (`Payment_Type_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `AutoNation`.`Employee_Role`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `AutoNation`.`Employee_Role` (
+  `Employee_Role_ID` INT NOT NULL AUTO_INCREMENT,
+  `Employee_Role_Name` ENUM('Salesman', 'Manager', 'Finance Manager', 'Mechanic', 'Representative') NOT NULL,
+  PRIMARY KEY (`Employee_Role_ID`),
+  UNIQUE INDEX `Employee_Role_ID_UNIQUE` (`Employee_Role_ID` ASC) VISIBLE,
+  UNIQUE INDEX `Employee_Role_Name_UNIQUE` (`Employee_Role_Name` ASC) VISIBLE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `AutoNation`.`Customer_Employee_Interaction`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `AutoNation`.`Customer_Employee_Interaction` (
+  `Customer_Employee_Interaction_ID` INT NOT NULL AUTO_INCREMENT,
+  `Customer_Customer_ID` INT NOT NULL,
+  `Employee_Employee_ID` INT NOT NULL,
+  INDEX `fk_Customer_has_Employee_Employee1_idx` (`Employee_Employee_ID` ASC) VISIBLE,
+  INDEX `fk_Customer_has_Employee_Customer1_idx` (`Customer_Customer_ID` ASC) VISIBLE,
+  PRIMARY KEY (`Customer_Employee_Interaction_ID`),
+  CONSTRAINT `fk_Customer_has_Employee_Customer1`
+    FOREIGN KEY (`Customer_Customer_ID`)
+    REFERENCES `AutoNation`.`Customer` (`Customer_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Customer_has_Employee_Employee1`
+    FOREIGN KEY (`Employee_Employee_ID`)
+    REFERENCES `AutoNation`.`Employee` (`Employee_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `AutoNation`.`Employee_has_Employee_Role`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `AutoNation`.`Employee_has_Employee_Role` (
+  `Employee_has_Employee_Role_ID` INT NOT NULL,
+  `Employee_Employee_ID` INT NOT NULL,
+  `Employee_Role_Employee_Role_ID` INT NOT NULL,
+  INDEX `fk_Employee_has_Employee_Role_Employee_Role1_idx` (`Employee_Role_Employee_Role_ID` ASC) VISIBLE,
+  INDEX `fk_Employee_has_Employee_Role_Employee1_idx` (`Employee_Employee_ID` ASC) VISIBLE,
+  PRIMARY KEY (`Employee_has_Employee_Role_ID`),
+  CONSTRAINT `fk_Employee_has_Employee_Role_Employee1`
+    FOREIGN KEY (`Employee_Employee_ID`)
+    REFERENCES `AutoNation`.`Employee` (`Employee_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Employee_has_Employee_Role_Employee_Role1`
+    FOREIGN KEY (`Employee_Role_Employee_Role_ID`)
+    REFERENCES `AutoNation`.`Employee_Role` (`Employee_Role_ID`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+-- -----------------------------------------------------
+-- Data for table `AutoNation`.`AutoNation`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `AutoNation`;
+INSERT INTO `AutoNation`.`AutoNation` (`Buisness_ID`, `AutoNation_PhoneNumber`) VALUES (1, '714-677-1399');
+INSERT INTO `AutoNation`.`AutoNation` (`Buisness_ID`, `AutoNation_PhoneNumber`) VALUES (2, '752-958-7426');
+INSERT INTO `AutoNation`.`AutoNation` (`Buisness_ID`, `AutoNation_PhoneNumber`) VALUES (3, '450-316-3316');
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `AutoNation`.`Address`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `AutoNation`;
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (1, '93099 Brown Crossing', 'NY', 'Albany', '9972');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (2, '4182 Boyd Junction', 'LA', 'Lake Charles', '35860');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (3, '4 Hallows Trail', 'CT', 'Hartford', '36405');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (4, '170 Holmberg Avenue', 'AR', 'Fort Smith', '42982');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (5, '7387 John Wall Drive', 'MA', 'Worcester', '4851');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (6, '53 Reindahl Drive', 'NE', 'Omaha', '42993');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (7, '2 Debs Plaza', 'WI', 'Madison', '69839');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (8, '988 Arizona Court', 'OH', 'Cincinnati', '88635');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (9, '758 Surrey Hill', 'CA', 'Los Angeles', '54648');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (10, '9571 Oak Valley Street', 'MN', 'Minneapolis', '57614');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (11, '68853 Hermina Trail', 'MD', 'Bowie', '35794');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (12, '74875 South Plaza', 'MS', 'Jackson', '15473');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (13, '14 Crest Line Junction', 'LA', 'Baton Rouge', '93546');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (14, '4 Pond Drive', 'MN', 'Saint Paul', '74671');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (15, '40893 Summit Trail', 'NE', 'Omaha', '80293');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (16, '82183 Westerfield Parkway', 'CA', 'Anaheim', '71517');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (17, '18 Sauthoff Hill', 'CA', 'Los Angeles', '60455');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (18, '59 Arapahoe Court', 'DC', 'Washington', '63011');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (19, '03333 Fieldstone Circle', 'MD', 'Laurel', '21639');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (20, '65 Park Meadow Park', 'CA', 'Oakland', '16823');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (21, '611 South Road', 'FL', 'Tampa', '19005');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (22, '4862 Hayes Court', 'VA', 'Springfield', '51893');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (23, '4582 Sherman Drive', 'WA', 'Everett', '80884');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (24, '5241 Dexter Circle', 'TX', 'Amarillo', '19636');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (25, '202 American Ash Point', 'MS', 'Biloxi', '8136');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (26, '9 Little Fleur Pass', 'PA', 'Erie', '94067');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (27, '4 Service Street', 'CA', 'Los Angeles', '54545');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (28, '1 Loeprich Junction', 'DE', 'Wilmington', '99080');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (29, '4 Dakota Street', 'TX', 'Dallas', '66917');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (30, '398 Brown Crossing', 'ID', 'Boise', '24949');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (31, '4 Prentice Road', 'GA', 'Athens', '30605');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (32, '98469 Autumn Leaf Hill', 'IA', 'Des Moines', '50310');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (33, '19847 Larry Way', 'MD', 'Bethesda', '20892');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (34, '24 Swallow Pass', 'CA', 'Stockton', '95205');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (35, '99580 Bowman Lane', 'NY', 'New York City', '10150');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (36, '3 Oriole Point', 'TX', 'Dallas', '75310');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (37, '9853 Ilene Road', 'MI', 'Grand Rapids', '49518');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (38, '7 Mariners Cove Alley', 'TX', 'Wichita Falls', '76305');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (39, '992 Melby Lane', 'MO', 'Kansas City', '64190');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (40, '90733 Holy Cross Park', 'ND', 'Fargo', '58106');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (41, '6 Elmside Pass', 'TX', 'El Paso', '79989');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (42, '13 Blackbird Drive', 'WV', 'Charleston', '25362');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (43, '6565 Leroy Hill', 'WA', 'Seattle', '98158');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (44, '6775 Manufacturers Drive', 'NJ', 'Paterson', '7505');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (45, '3 Hazelcrest Avenue', 'SC', 'Columbia', '29215');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (46, '9505 Bluestem Park', 'TX', 'Arlington', '76011');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (47, '2 Maple Wood Lane', 'OK', 'Oklahoma City', '73157');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (48, '17 Jenna Park', 'AL', 'Huntsville', '35815');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (49, '00336 Harbort Park', 'CA', 'Newport Beach', '92662');
+INSERT INTO `AutoNation`.`Address` (`Address_ID`, `Address_Street`, `Address_State`, `Address_County`, `Address_Zipcode`) VALUES (50, '3 Caliangt Hill', 'AL', 'Montgomery', '36104');
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `AutoNation`.`DealerShip`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `AutoNation`;
+INSERT INTO `AutoNation`.`DealerShip` (`DealerShip_ID`, `DealerShip_Ph`, `DealerShip_Name`, `Address_Address_ID`, `AutoNation_Buisness_ID`) VALUES (1, '331-763-7517', 'Americi', 1, 3);
+INSERT INTO `AutoNation`.`DealerShip` (`DealerShip_ID`, `DealerShip_Ph`, `DealerShip_Name`, `Address_Address_ID`, `AutoNation_Buisness_ID`) VALUES (2, '183-749-0067', 'Dillestone', 4, 3);
+INSERT INTO `AutoNation`.`DealerShip` (`DealerShip_ID`, `DealerShip_Ph`, `DealerShip_Name`, `Address_Address_ID`, `AutoNation_Buisness_ID`) VALUES (3, '669-891-4447', 'Delf', 2, 1);
+INSERT INTO `AutoNation`.`DealerShip` (`DealerShip_ID`, `DealerShip_Ph`, `DealerShip_Name`, `Address_Address_ID`, `AutoNation_Buisness_ID`) VALUES (4, '409-505-0967', 'Tibbits', 5, 3);
+INSERT INTO `AutoNation`.`DealerShip` (`DealerShip_ID`, `DealerShip_Ph`, `DealerShip_Name`, `Address_Address_ID`, `AutoNation_Buisness_ID`) VALUES (5, '141-258-2483', 'Bronot', 3, 2);
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `AutoNation`.`Customer`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `AutoNation`;
+INSERT INTO `AutoNation`.`Customer` (`Customer_ID`, `Customer_FNAME`, `Customer_LNAME`, `Customer_PH`, `Address_Address_ID`) VALUES (1, 'Phillipe', 'Facchini', '764-308-6928', 32);
+INSERT INTO `AutoNation`.`Customer` (`Customer_ID`, `Customer_FNAME`, `Customer_LNAME`, `Customer_PH`, `Address_Address_ID`) VALUES (2, 'Burl', 'Hastewell', '812-271-8438', 43);
+INSERT INTO `AutoNation`.`Customer` (`Customer_ID`, `Customer_FNAME`, `Customer_LNAME`, `Customer_PH`, `Address_Address_ID`) VALUES (3, 'Nanon', 'Espadater', '835-785-2958', 48);
+INSERT INTO `AutoNation`.`Customer` (`Customer_ID`, `Customer_FNAME`, `Customer_LNAME`, `Customer_PH`, `Address_Address_ID`) VALUES (4, 'Lillian', 'Eland', '679-158-1031', 37);
+INSERT INTO `AutoNation`.`Customer` (`Customer_ID`, `Customer_FNAME`, `Customer_LNAME`, `Customer_PH`, `Address_Address_ID`) VALUES (5, 'Ingrid', 'Tattoo', '958-409-8885', 29);
+INSERT INTO `AutoNation`.`Customer` (`Customer_ID`, `Customer_FNAME`, `Customer_LNAME`, `Customer_PH`, `Address_Address_ID`) VALUES (6, 'Jessalyn', 'Plews', '745-218-9731', 30);
+INSERT INTO `AutoNation`.`Customer` (`Customer_ID`, `Customer_FNAME`, `Customer_LNAME`, `Customer_PH`, `Address_Address_ID`) VALUES (7, 'Deva', 'Mundwell', '783-864-8332', 39);
+INSERT INTO `AutoNation`.`Customer` (`Customer_ID`, `Customer_FNAME`, `Customer_LNAME`, `Customer_PH`, `Address_Address_ID`) VALUES (8, 'Brice', 'Halle', '862-943-5591', 27);
+INSERT INTO `AutoNation`.`Customer` (`Customer_ID`, `Customer_FNAME`, `Customer_LNAME`, `Customer_PH`, `Address_Address_ID`) VALUES (9, 'Davita', 'Jeves', '118-644-7075', 38);
+INSERT INTO `AutoNation`.`Customer` (`Customer_ID`, `Customer_FNAME`, `Customer_LNAME`, `Customer_PH`, `Address_Address_ID`) VALUES (10, 'Almeda', 'Yushkin', '766-441-7252', 36);
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `AutoNation`.`Employee`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `AutoNation`;
+INSERT INTO `AutoNation`.`Employee` (`Employee_ID`, `Employee_FNAME`, `Employee_LNAME`, `Employee_PH`, `Employee_SSN`, `DealerShip_DealerShip_ID`, `Address_Address_ID`) VALUES (1, 'Daria', 'Wooller', '781-265-0324', '201-22-2333', 4, 11);
+INSERT INTO `AutoNation`.`Employee` (`Employee_ID`, `Employee_FNAME`, `Employee_LNAME`, `Employee_PH`, `Employee_SSN`, `DealerShip_DealerShip_ID`, `Address_Address_ID`) VALUES (2, 'Bernadette', 'Blazey', '318-131-8357', '223-66-0117', 2, 13);
+INSERT INTO `AutoNation`.`Employee` (`Employee_ID`, `Employee_FNAME`, `Employee_LNAME`, `Employee_PH`, `Employee_SSN`, `DealerShip_DealerShip_ID`, `Address_Address_ID`) VALUES (3, 'Magda', 'McDonell', '894-351-9250', '149-32-6745', 3, 23);
+INSERT INTO `AutoNation`.`Employee` (`Employee_ID`, `Employee_FNAME`, `Employee_LNAME`, `Employee_PH`, `Employee_SSN`, `DealerShip_DealerShip_ID`, `Address_Address_ID`) VALUES (4, 'Saul', 'Bellee', '301-494-7692', '649-96-7814', 5, 24);
+INSERT INTO `AutoNation`.`Employee` (`Employee_ID`, `Employee_FNAME`, `Employee_LNAME`, `Employee_PH`, `Employee_SSN`, `DealerShip_DealerShip_ID`, `Address_Address_ID`) VALUES (5, 'Jess', 'Huyton', '447-694-3743', '272-38-9218', 3, 14);
+INSERT INTO `AutoNation`.`Employee` (`Employee_ID`, `Employee_FNAME`, `Employee_LNAME`, `Employee_PH`, `Employee_SSN`, `DealerShip_DealerShip_ID`, `Address_Address_ID`) VALUES (6, 'Hanson', 'Hewertson', '696-421-5093', '213-80-7880', 1, 12);
+INSERT INTO `AutoNation`.`Employee` (`Employee_ID`, `Employee_FNAME`, `Employee_LNAME`, `Employee_PH`, `Employee_SSN`, `DealerShip_DealerShip_ID`, `Address_Address_ID`) VALUES (7, 'Kimberlee', 'Spellessy', '285-253-5279', '230-16-0234', 2, 10);
+INSERT INTO `AutoNation`.`Employee` (`Employee_ID`, `Employee_FNAME`, `Employee_LNAME`, `Employee_PH`, `Employee_SSN`, `DealerShip_DealerShip_ID`, `Address_Address_ID`) VALUES (8, 'Kyle', 'Blinman', '743-138-5252', '431-88-5028', 2, 21);
+INSERT INTO `AutoNation`.`Employee` (`Employee_ID`, `Employee_FNAME`, `Employee_LNAME`, `Employee_PH`, `Employee_SSN`, `DealerShip_DealerShip_ID`, `Address_Address_ID`) VALUES (9, 'Windy', 'Lubbock', '944-429-1146', '789-16-7027', 4, 15);
+INSERT INTO `AutoNation`.`Employee` (`Employee_ID`, `Employee_FNAME`, `Employee_LNAME`, `Employee_PH`, `Employee_SSN`, `DealerShip_DealerShip_ID`, `Address_Address_ID`) VALUES (10, 'Abbe', 'Kittiman', '163-886-6648', '557-36-8724', 5, 7);
+INSERT INTO `AutoNation`.`Employee` (`Employee_ID`, `Employee_FNAME`, `Employee_LNAME`, `Employee_PH`, `Employee_SSN`, `DealerShip_DealerShip_ID`, `Address_Address_ID`) VALUES (11, 'Fidole', 'Dady', '627-768-4687', '370-04-6842', 3, 8);
+INSERT INTO `AutoNation`.`Employee` (`Employee_ID`, `Employee_FNAME`, `Employee_LNAME`, `Employee_PH`, `Employee_SSN`, `DealerShip_DealerShip_ID`, `Address_Address_ID`) VALUES (12, 'Jamie', 'Hek', '989-313-7714', '845-99-9159', 3, 16);
+INSERT INTO `AutoNation`.`Employee` (`Employee_ID`, `Employee_FNAME`, `Employee_LNAME`, `Employee_PH`, `Employee_SSN`, `DealerShip_DealerShip_ID`, `Address_Address_ID`) VALUES (13, 'Devondra', 'Shower', '980-108-7577', '109-01-9391', 2, 9);
+INSERT INTO `AutoNation`.`Employee` (`Employee_ID`, `Employee_FNAME`, `Employee_LNAME`, `Employee_PH`, `Employee_SSN`, `DealerShip_DealerShip_ID`, `Address_Address_ID`) VALUES (14, 'Belinda', 'Couvet', '287-637-8002', '814-02-4131', 3, 22);
+INSERT INTO `AutoNation`.`Employee` (`Employee_ID`, `Employee_FNAME`, `Employee_LNAME`, `Employee_PH`, `Employee_SSN`, `DealerShip_DealerShip_ID`, `Address_Address_ID`) VALUES (15, 'Godiva', 'Jenks', '964-551-0799', '286-76-3743', 3, 6);
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `AutoNation`.`Brand`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `AutoNation`;
+INSERT INTO `AutoNation`.`Brand` (`Brand_ID`, `Brand_Name`, `Brand_Country`) VALUES (1, 'Volkswagen', 'Germany');
+INSERT INTO `AutoNation`.`Brand` (`Brand_ID`, `Brand_Name`, `Brand_Country`) VALUES (2, 'Daimler', 'Germany');
+INSERT INTO `AutoNation`.`Brand` (`Brand_ID`, `Brand_Name`, `Brand_Country`) VALUES (3, 'Toyota', 'Japan');
+INSERT INTO `AutoNation`.`Brand` (`Brand_ID`, `Brand_Name`, `Brand_Country`) VALUES (4, 'Ford', 'United States');
+INSERT INTO `AutoNation`.`Brand` (`Brand_ID`, `Brand_Name`, `Brand_Country`) VALUES (5, 'Honda', 'Japan');
+INSERT INTO `AutoNation`.`Brand` (`Brand_ID`, `Brand_Name`, `Brand_Country`) VALUES (6, 'General Motors', 'United States');
+INSERT INTO `AutoNation`.`Brand` (`Brand_ID`, `Brand_Name`, `Brand_Country`) VALUES (7, 'SAIC', 'China');
+INSERT INTO `AutoNation`.`Brand` (`Brand_ID`, `Brand_Name`, `Brand_Country`) VALUES (8, 'BMW', 'Germany');
+INSERT INTO `AutoNation`.`Brand` (`Brand_ID`, `Brand_Name`, `Brand_Country`) VALUES (9, 'Volvo', 'Japan');
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `AutoNation`.`Vehicle`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `AutoNation`;
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (1, 'Sedan', '4', 1998, '1B3CB1HA0AD474522', 7216.01, 5, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (2, 'Sedan', '2', 2008, 'WAUWFAFH3DN390335', 51839.54, 2, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (3, 'Sports', '2', 2000, '1D7RV1GP1BS440128', 62054.75, 2, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (4, 'Luxury', '4', 1992, '5GADT13S942091986', 115827.3, 2, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (5, 'Coupe', '4', 2001, '1C3CCBCG5EN082346', 30469.25, 1, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (6, 'Sedan', '2', 1987, '1FAHP3FN8AW993237', 49413.04, 2, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (7, 'Coupe', '2', 2007, '1NXBU4EE8AZ288218', 91333.37, 1, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (8, 'HatchBack', '4', 2007, 'WAUEL94F05N848838', 82946.43, 4, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (9, 'Sports', '2', 2007, '2LMHJ5AR6AB488185', 36707.36, 2, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (10, 'Sports', '4', 1999, 'WA1EV74L48D221054', 74256, 5, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (11, 'Sedan', '4', 2006, 'WBAVC73508A748246', 110580.13, 5, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (12, 'StationWagon', '4', 1995, '1GKS2GEJ3DR808247', 93051.93, 4, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (13, 'Sedan', '2', 2008, '1G6AY5SX7F0749555', 39500.89, 3, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (14, 'Coupe', '2', 2004, '5J6TF1H38FL741465', 103894.23, 1, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (15, 'Coupe', '2', 1963, '5N1AN0NU4BC199861', 110558.28, 4, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (16, 'Sedan', '2', 1994, 'WBAVC73547A540563', 89090.66, 3, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (17, 'Coupe', '2', 2001, 'WAU4FBFL3BA349810', 42893.5, 4, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (18, 'StationWagon', '4', 2003, 'WBANE535X7C550338', 19479.57, 5, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (19, 'StationWagon', '4', 1985, '5XYZG3ABXBG273285', 40552.02, 4, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (20, 'Luxury', '4', 2011, '1D7RW2GK1BS592529', 30102.12, 5, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (21, 'Luxury', '2', 1997, '2C3CDXJG5FH275880', 37237.49, 1, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (22, 'Sedan', '2', 2005, '1G4GC5GG8AF024787', 52519.94, 3, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (23, 'Luxury', '2', 2003, 'JTDKN3DU1F0267228', 43102.66, 5, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (24, 'Sports', '4', 2001, 'JN1CV6FE2EM235670', 96729.32, 1, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (25, 'StationWagon', '4', 2008, 'WAUDGAFLXDA194215', 60078.9, 5, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (26, 'Sports', '4', 1990, 'JN8AS1MU3AM933374', 16935.38, 3, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (27, 'Luxury', '2', 2011, 'WBA4B3C57FD878785', 46457.59, 3, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (28, 'Luxury', '4', 2004, '1GYEE23AX90944287', 63849.29, 3, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (29, 'Sedan', '4', 1995, 'YV1952AS1D1700995', 89479.63, 1, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (30, 'Coupe', '4', 1986, 'YV4952CF5E1141472', 12634.76, 2, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (31, 'Sedan', '2', 2002, '5XYKT3A1XBG148517', 40361.48, 3, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (32, 'HatchBack', '2', 2006, '1FTMF1C8XAK200507', 34432.14, 3, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (33, 'Sedan', '2', 1996, 'WP0AB2A83CS973106', 39174.06, 3, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (34, 'Sedan', '2', 1997, '3C63DRJL7CG620236', 68561.46, 5, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (35, 'Sports', '2', 2011, 'JTJHY7AX1D4374340', 73084.51, 3, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (36, 'Luxury', '2', 1996, 'SCFBF04BX8G867560', 117153.27, 1, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (37, 'HatchBack', '4', 1991, 'SCFEDCAD6BG394452', 86710.91, 4, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (38, 'Luxury', '4', 1984, '1G6KF57984U270832', 84002.8, 3, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (39, 'Sedan', '4', 2003, 'WAUGL98E56A653028', 81918.22, 3, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (40, 'Sedan', '2', 2012, '1GYUKDEF3AR798758', 105281.1, 2, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (41, 'StationWagon', '4', 1992, 'SCFEFBBC0AG970335', 16201.31, 3, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (42, 'Sedan', '2', 2001, 'KNALN4D76F5649873', 36637.78, 1, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (43, 'Sports', '2', 1998, '2C4RRGAG2ER041342', 6778.27, 5, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (44, 'Sedan', '4', 1998, '1G6EL12Y31B720827', 67756.1, 2, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (45, 'Coupe', '4', 1992, '1G4GD5G37EF210529', 109337.82, 1, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (46, 'StationWagon', '4', 1996, 'KNDJT2A51C7461463', 52693.12, 3, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (47, 'HatchBack', '2', 1993, '1GYEE23A690560717', 108420.76, 3, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (48, 'Sedan', '4', 2006, 'WBALM7C59EE593897', 52584.82, 2, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (49, 'StationWagon', '4', 2005, '1G4HP54K424343862', 80605.96, 5, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (50, 'Sedan', '2', 1995, 'JH4DC54826S454574', 10591.26, 4, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (51, 'Coupe', '4', 1992, 'JHMZF1C43CS856457', 19116.77, 1, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (52, 'Sports', '4', 2012, 'WAUVC68E62A293431', 25409.2, 4, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (53, 'Coupe', '4', 1995, '3GYFNBEY0AS950241', 25652.85, 1, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (54, 'Sedan', '4', 1991, '1C6RD7LP7CS455554', 20487.1, 5, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (55, 'StationWagon', '4', 0000, '5GAER23728J827764', 111534.47, 5, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (56, 'Coupe', '4', 2010, 'SALAG2D49DA464549', 16146.68, 4, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (57, 'StationWagon', '4', 2005, '1C4AJWAG1FL642735', 58148.92, 4, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (58, 'Luxury', '4', 1994, 'KNDPB3A21D7780050', 111948.85, 5, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (59, 'Luxury', '4', 2009, 'WBA3A5C51DF834048', 39495.02, 2, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (60, 'Sedan', '4', 2011, 'JTDJTUD32ED204337', 98289.6, 3, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (61, 'Coupe', '2', 2006, 'JN8AE2KP5F9968907', 103199.99, 4, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (62, 'Sedan', '2', 2008, 'WDDHF5KB4EA468074', 107877.29, 2, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (63, 'Sedan', '2', 1992, 'SALVP2BG7FH371666', 79298.76, 5, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (64, 'Sports', '2', 1989, 'JTHBF1D29F5485581', 68817.89, 4, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (65, 'HatchBack', '2', 2006, 'WBADW3C55DJ049748', 107757.05, 1, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (66, 'Luxury', '4', 2003, 'WBA3A5C50CF704955', 12446.41, 4, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (67, 'Sedan', '2', 1993, '3GYFNFEY2AS383103', 75613.18, 5, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (68, 'Sports', '4', 2009, 'WAUVFAFH7CN052253', 50932.71, 5, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (69, 'HatchBack', '4', 1995, '3GYFNDE34DS318203', 18180.29, 2, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (70, 'Coupe', '4', 1991, '5GAKRCED0BJ139975', 110615.55, 4, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (71, 'Sedan', '2', 2001, 'WAUAF78E98A138490', 119882.78, 3, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (72, 'HatchBack', '4', 2001, 'WDDGF4HB4EA705000', 42827.91, 1, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (73, 'Sedan', '2', 1992, '2FMPK4J99FB308183', 31640.39, 3, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (74, 'Coupe', '4', 1998, '5J6YH1H37AL903532', 91685.1, 1, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (75, 'HatchBack', '4', 1991, 'WAUEF48H98K427681', 4324.18, 4, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (76, 'Sedan', '2', 1971, 'JTHDU1EF4C5552440', 118650.12, 2, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (77, 'Luxury', '2', 2001, 'WBA3A5C56FP217516', 91423.67, 4, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (78, 'Luxury', '2', 2001, '3VW4A7AT7CM943677', 44173.5, 4, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (79, 'Coupe', '4', 2002, 'WP0CB2A81FS582680', 63014.76, 3, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (80, 'Coupe', '2', 2010, 'KMHCT4AE1DU458596', 35114.6, 3, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (81, 'Coupe', '2', 1993, '1GYS3GEF4CR333446', 44033.13, 3, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (82, 'HatchBack', '4', 2010, '3C3CFFFH9DT155462', 22634.67, 2, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (83, 'Sedan', '2', 2001, 'WAURVAFA7AN659192', 38887.65, 5, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (84, 'HatchBack', '2', 1989, '1G6AW5SXXF0695335', 16880.42, 2, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (85, 'Sedan', '2', 2010, '2HNYD28217H454086', 101218.78, 1, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (86, 'Sedan', '2', 2007, 'WVWED7AJXBW345692', 43511.39, 5, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (87, 'StationWagon', '2', 1993, '1YVHZ8BA9A5249313', 100923.83, 1, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (88, 'Coupe', '2', 2003, '5NPEB4AC8BH794817', 113964.75, 5, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (89, 'Coupe', '4', 1988, '19UUA66235A414659', 96881.23, 4, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (90, 'Sedan', '4', 1990, 'YV1672MK3D2937751', 83347.76, 5, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (91, 'StationWagon', '2', 2000, '1C3CCBHG8CN211816', 71666.99, 2, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (92, 'StationWagon', '2', 1994, 'JH4CU2F64CC059580', 94925.11, 5, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (93, 'StationWagon', '4', 1993, 'JN1AZ4EH2EM795958', 60742.32, 3, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (94, 'HatchBack', '4', 2004, '3VW517AT1EM764316', 23779.42, 5, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (95, 'Coupe', '2', 1999, 'WBAFA53591L052297', 116611.18, 1, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (96, 'HatchBack', '4', 1997, '1G6AE5SX0E0202537', 15974.36, 2, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (97, 'Luxury', '2', 1997, 'WAUAC48H84K720067', 100649.73, 3, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (98, 'Sedan', '4', 2005, 'SCFFDABM6EG228721', 50426.72, 5, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (99, 'StationWagon', '2', 1996, '5FRYD3H65GB928771', 77767.67, 5, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (100, 'Coupe', '4', 2006, '3C3CFFCR7CT120236', 31404.81, 1, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (101, 'Luxury', '4', 2007, '1FTSW3A5XAE579664', 48175.83, 3, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (102, 'Sports', '4', 2000, '2G4GT5GC5B9531251', 110214.83, 4, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (103, 'Sports', '2', 2005, 'WBA3A9G54CN358562', 78936.29, 1, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (104, 'Sedan', '2', 0000, '1GD022CG0CZ265477', 40614.92, 2, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (105, 'StationWagon', '4', 2010, 'WAUEFAFL9EN423114', 39667.84, 2, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (106, 'Sports', '2', 1992, '1FMJU1F59AE793751', 29791.53, 3, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (107, 'Sports', '4', 1970, '1FTEW1CW0AK817076', 17081.81, 3, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (108, 'Coupe', '2', 1996, 'WBAYA6C58ED810273', 100356.35, 1, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (109, 'Sedan', '2', 2007, 'WAUHGBFC8EN052270', 13001.72, 2, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (110, 'HatchBack', '4', 1996, '1N6AA0CJ2EN495430', 61329.37, 4, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (111, 'Sports', '2', 2009, 'SCBET9ZA9F8610473', 10730.87, 2, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (112, 'Sports', '2', 2008, 'SCFEBBEL6DG446439', 113791.38, 4, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (113, 'StationWagon', '4', 1992, 'WBAFR9C52CC728429', 104832.3, 4, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (114, 'Luxury', '4', 1999, 'WBAUL7C58DV892528', 96012.77, 2, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (115, 'HatchBack', '4', 2002, '3N1AB6AP0BL117082', 20974.87, 1, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (116, 'HatchBack', '2', 1989, 'JN8AE2KP8B9831647', 103126.39, 4, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (117, 'Luxury', '4', 2006, 'WBAFR9C52CD086840', 68781.74, 3, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (118, 'Coupe', '4', 1993, 'WBAAN37471N644631', 80750.71, 2, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (119, 'Coupe', '2', 1967, 'KNAFX5A86F5319385', 73967.96, 4, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (120, 'Sedan', '2', 1988, 'KNADM4A35C6124057', 31738.93, 1, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (121, 'StationWagon', '2', 2006, '1G6DD67V090198735', 91101.72, 1, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (122, 'Coupe', '2', 1996, 'JN8AF5MR6DT394184', 24406.32, 3, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (123, 'HatchBack', '4', 2007, '3GYEK63N13G004496', 68426.08, 2, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (124, 'Sports', '4', 2008, '3D7TP2CT3BG361348', 4160, 2, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (125, 'Luxury', '4', 2006, '1GYUKBEF0AR054846', 25679.15, 5, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (126, 'Coupe', '4', 1995, 'JTHBL5EF4E5917431', 86438.01, 3, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (127, 'Coupe', '2', 1999, 'JH4KC1F94EC638171', 57527.71, 3, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (128, 'Sports', '2', 2008, 'WA1LGBFEXCD698678', 107871.51, 2, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (129, 'Sports', '2', 1999, 'WAUAH74F38N383562', 88078.28, 2, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (130, 'Luxury', '4', 1999, 'WBAVC73508K904473', 100530.62, 3, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (131, 'Sports', '2', 1993, '19UUA66297A224643', 89560.79, 5, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (132, 'Luxury', '4', 2007, '1GYFC162X9R063237', 35015.88, 3, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (133, 'Luxury', '4', 2006, 'WBAET37474N962325', 70655.64, 3, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (134, 'Coupe', '2', 1996, 'JA32U1FU5AU069661', 22159.53, 2, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (135, 'Sports', '4', 2003, '4T1BK3DB0AU104929', 65427.85, 3, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (136, 'StationWagon', '4', 2002, '1FTEW1E87AK859470', 115437.32, 3, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (137, 'StationWagon', '2', 2005, '19UUA65664A818817', 78368.9, 5, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (138, 'StationWagon', '2', 2007, '5FRYD3H91GB130472', 16719.44, 1, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (139, 'Luxury', '4', 2011, 'KNALW4D48F6076844', 101041.66, 1, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (140, 'HatchBack', '2', 1995, '1FTEW1CM5BF359608', 71070.72, 2, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (141, 'Coupe', '4', 2007, 'WAUVT54B52N926354', 16267.76, 2, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (142, 'StationWagon', '2', 1996, '1YVHZ8BA0A5367766', 96590.34, 1, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (143, 'Sedan', '4', 2003, 'WBAWB73577P402147', 52417.06, 5, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (144, 'HatchBack', '4', 1994, '1FTEX1CV4AF260511', 50461.43, 5, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (145, 'HatchBack', '4', 0000, 'WAUKF78E18A407375', 69165.57, 1, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (146, 'Sports', '2', 2000, '3D73Y4HL3BG454811', 22441.8, 1, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (147, 'Sedan', '2', 2006, 'WBAYE8C51DD634780', 100628.92, 5, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (148, 'Sports', '2', 2011, '3D73Y4EL2AG260855', 37324.37, 4, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (149, 'Sedan', '2', 2003, 'WDDHF2EB3CA056395', 78864.67, 5, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (150, 'Sports', '2', 1988, '2C3CCARG4FH721053', 15012.05, 2, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (151, 'Sedan', '4', 2007, '5N1AA0ND6EN407193', 106009.45, 3, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (152, 'StationWagon', '2', 2008, 'WAUDG94F05N252998', 86494.37, 1, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (153, 'Sports', '4', 2012, 'WVWED7AJXBW701199', 55084.15, 3, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (154, 'Coupe', '2', 1991, 'JH4CU2F62AC226757', 14833.92, 2, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (155, 'Sedan', '4', 2009, 'SCBCR73W28C500878', 65844.4, 4, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (156, 'Sedan', '4', 1994, 'WAUVT68E14A817765', 116090.4, 1, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (157, 'Coupe', '4', 2012, 'JH4KB2F53AC867828', 7606.83, 2, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (158, 'Luxury', '2', 2010, 'WAUJC58E62A642290', 3385.98, 3, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (159, 'Sports', '2', 2000, 'JA32U1FU7AU141847', 21819.13, 2, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (160, 'Luxury', '4', 2005, 'JM1DE1KY1C0777027', 18516.59, 5, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (161, 'HatchBack', '2', 2007, '1C3ADEBZXDV451354', 16332.6, 2, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (162, 'Sports', '2', 2011, '2C3CCABG6EH773860', 114131.2, 5, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (163, 'HatchBack', '2', 1993, 'SAJWA4EB0EL574145', 95907.11, 1, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (164, 'Sedan', '4', 0000, 'WBAXA5C59ED783056', 64232.97, 2, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (165, 'Sedan', '2', 1993, '1G6DS1E34C0288164', 96357.04, 3, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (166, 'Coupe', '2', 2011, '3VW1K7AJ2DM593407', 19128.78, 2, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (167, 'Coupe', '2', 2004, '2T1BURHEXFC076146', 117179.76, 1, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (168, 'Luxury', '2', 2001, 'WBAYF4C55ED514309', 12978, 4, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (169, 'Sports', '4', 1997, 'JH4NA12694T148502', 25641.81, 2, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (170, 'Sedan', '4', 2006, '1GYFC66808R270543', 16878.92, 4, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (171, 'Sedan', '2', 1993, '1B3CB4HA9AD092197', 27232.92, 5, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (172, 'Sedan', '2', 2008, '1G6DP8EV3A0546618', 85922.99, 5, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (173, 'Sedan', '4', 1994, '1G6AX5SX9F0451544', 41583.3, 5, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (174, 'Sports', '4', 2006, '1C4RDHEG5DC378674', 76184.9, 4, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (175, 'Sports', '4', 1995, '2G61V5S86E9901024', 64981.32, 3, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (176, 'HatchBack', '2', 2011, '2G61U5S3XD9329428', 105408.87, 4, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (177, 'Sedan', '4', 2012, '3GYFNAE36FS254425', 11219.2, 2, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (178, 'HatchBack', '2', 2000, 'WAUKD98P99A850670', 18396.57, 4, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (179, 'Sports', '4', 1985, 'YV4952CT5E1500972', 28207.77, 5, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (180, 'Sports', '2', 1985, '1G6DM57T070636336', 57267.98, 3, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (181, 'Luxury', '2', 2002, '1N6AA0EC9FN405447', 56526.67, 1, 9);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (182, 'Sports', '2', 1993, '1C6RD6GP1CS622723', 14680.35, 5, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (183, 'Coupe', '4', 2006, '1G4GD5G33FF303520', 92917.65, 1, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (184, 'Coupe', '2', 1993, 'WBAFU9C55DD945306', 12131.31, 3, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (185, 'Sports', '2', 1993, '1G6AB5S34F0526999', 29540.56, 2, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (186, 'Sports', '4', 2010, '1FMJK1G50AE602786', 95866.71, 5, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (187, 'Luxury', '4', 2000, 'JM1NC2PF7E0032616', 29959.83, 2, 2);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (188, 'Sedan', '4', 1989, '1GYFK36229R900884', 51828.91, 3, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (189, 'Sports', '2', 1994, 'WAUBG78E66A822783', 86328.62, 5, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (190, 'Sedan', '2', 1994, 'JHMZF1C45CS165575', 89885.23, 5, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (191, 'Sports', '2', 1986, '1FTEX1CM7CF489579', 51112.58, 2, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (192, 'HatchBack', '2', 1998, 'SAJWA0EX6E8883514', 47086.38, 5, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (193, 'HatchBack', '2', 2008, 'WA1AGAFE9CD569266', 19433.54, 3, 8);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (194, 'Luxury', '2', 2010, 'WAUKF78E75A115841', 64649.43, 2, 6);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (195, 'Sedan', '2', 1986, 'JTHBE1BL9FA891558', 56213.59, 1, 3);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (196, 'Sports', '4', 2004, '1FTEX1C81AF106400', 104602.91, 4, 1);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (197, 'Luxury', '4', 1962, 'WBAET37434N713486', 101991.7, 1, 5);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (198, 'Sports', '4', 1988, '1GTN2TEH9FZ353227', 5327.56, 1, 7);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (199, 'Sports', '4', 1990, 'WBAPH7C58AA790910', 78865.86, 3, 4);
+INSERT INTO `AutoNation`.`Vehicle` (`Vehicle_ID`, `Vehicle_Type`, `Vehicle_Door`, `Vehicle_Year`, `Vehicle_VIN`, `Vehicle_Price`, `DealerShip_DealerShip_ID`, `Brand_Brand_ID`) VALUES (200, 'Sedan', '2', 2000, 'WAUAF78E35A142014', 25442, 4, 9);
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `AutoNation`.`Payment_Type`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `AutoNation`;
+INSERT INTO `AutoNation`.`Payment_Type` (`Payment_Type_ID`) VALUES (1);
+INSERT INTO `AutoNation`.`Payment_Type` (`Payment_Type_ID`) VALUES (2);
+INSERT INTO `AutoNation`.`Payment_Type` (`Payment_Type_ID`) VALUES (3);
+INSERT INTO `AutoNation`.`Payment_Type` (`Payment_Type_ID`) VALUES (4);
+INSERT INTO `AutoNation`.`Payment_Type` (`Payment_Type_ID`) VALUES (5);
+INSERT INTO `AutoNation`.`Payment_Type` (`Payment_Type_ID`) VALUES (6);
+INSERT INTO `AutoNation`.`Payment_Type` (`Payment_Type_ID`) VALUES (7);
+INSERT INTO `AutoNation`.`Payment_Type` (`Payment_Type_ID`) VALUES (8);
+INSERT INTO `AutoNation`.`Payment_Type` (`Payment_Type_ID`) VALUES (9);
+INSERT INTO `AutoNation`.`Payment_Type` (`Payment_Type_ID`) VALUES (10);
+INSERT INTO `AutoNation`.`Payment_Type` (`Payment_Type_ID`) VALUES (11);
+INSERT INTO `AutoNation`.`Payment_Type` (`Payment_Type_ID`) VALUES (12);
+INSERT INTO `AutoNation`.`Payment_Type` (`Payment_Type_ID`) VALUES (13);
+INSERT INTO `AutoNation`.`Payment_Type` (`Payment_Type_ID`) VALUES (14);
+INSERT INTO `AutoNation`.`Payment_Type` (`Payment_Type_ID`) VALUES (15);
+INSERT INTO `AutoNation`.`Payment_Type` (`Payment_Type_ID`) VALUES (16);
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `AutoNation`.`Contract`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `AutoNation`;
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (1, 72, 1, 4, 5, 3, 172);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (2, 24, 0, 8, 11, 8, 11);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (3, 36, 1, 16, 15, 2, NULL);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (4, 12, 0, 16, 2, 1, 119);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (5, 12, 1, 11, 14, 2, 25);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (6, 36, 0, 14, 8, 3, 40);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (7, 60, 1, 7, 4, 1, 131);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (8, 36, 1, 5, 15, 2, 168);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (9, 48, 0, 11, 11, 9, 146);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (10, 36, 1, 13, 6, 9, 111);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (11, 60, 0, 14, 11, 6, 31);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (12, 24, 0, 9, 12, 4, 197);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (13, 24, 0, 14, 13, 3, 77);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (14, 48, 0, 1, 5, 5, 196);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (15, 12, 0, 4, 5, 4, 15);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (16, 36, 0, 3, 11, 9, 4);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (17, 12, 0, 4, 1, 2, 99);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (18, 36, 1, 4, 4, 9, 66);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (19, 36, 0, 14, 7, 10, 95);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (20, 72, 0, 5, 11, 5, 28);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (21, NULL, 0, 6, 5, 3, 97);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (22, 24, 0, 6, 14, 7, 132);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (23, 36, 0, 3, 11, 7, 68);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (24, 24, 1, 13, 4, 8, 92);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (25, 24, 1, 15, 7, 5, NULL);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (26, 12, 0, 7, 1, 9, 63);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (27, 48, 1, 2, 9, 5, 122);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (28, 12, 1, 10, 2, 10, 171);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (29, 36, 0, 7, 14, 2, 100);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (30, 12, 0, 16, 10, 4, 189);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (31, 48, 0, 8, 4, 8, 130);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (32, 12, 0, 10, 6, 6, 158);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (33, 12, 0, 8, 11, 4, 106);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (34, 12, 0, 14, 12, 3, 65);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (35, 72, 1, 3, 15, 7, 108);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (36, 48, 0, 13, 1, 8, 76);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (37, 72, 0, 16, 4, 5, 143);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (38, 24, 1, 10, 4, 5, 56);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (39, 36, 0, 15, 7, 5, 149);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (40, 12, 1, 7, 11, 1, 103);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (41, 36, 1, 8, 5, 7, 55);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (42, NULL, 0, 9, 10, 1, 194);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (43, 72, 1, 5, 6, 3, 181);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (44, 24, 0, 7, 8, 10, 23);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (45, 72, 0, 10, 3, 4, 128);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (46, 72, 0, 7, 13, 5, 45);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (47, 36, 0, 1, 15, 2, 29);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (48, 36, 0, 13, 12, 8, 118);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (49, 60, 1, 5, 11, 6, 101);
+INSERT INTO `AutoNation`.`Contract` (`Contract_ID`, `Contract_Warranty`, `Contract_Insurance`, `Payment_Type_Payment_Type_ID`, `Employee_Employee_ID`, `Customer_Customer_ID`, `Vehicle_Vehicle_ID`) VALUES (50, 36, 1, 8, 7, 1, 79);
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `AutoNation`.`Loan`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `AutoNation`;
+INSERT INTO `AutoNation`.`Loan` (`Loan_ID`, `Loan_Interest`, `Loan_Term`, `Loan_Downpayment`, `Payment_Type_Payment_Type_ID`) VALUES (1, 2.04, '72', 4491.58, 16);
+INSERT INTO `AutoNation`.`Loan` (`Loan_ID`, `Loan_Interest`, `Loan_Term`, `Loan_Downpayment`, `Payment_Type_Payment_Type_ID`) VALUES (2, 1.52, '72', 1210.7, 13);
+INSERT INTO `AutoNation`.`Loan` (`Loan_ID`, `Loan_Interest`, `Loan_Term`, `Loan_Downpayment`, `Payment_Type_Payment_Type_ID`) VALUES (3, 3.17, '48', 1492.91, 9);
+INSERT INTO `AutoNation`.`Loan` (`Loan_ID`, `Loan_Interest`, `Loan_Term`, `Loan_Downpayment`, `Payment_Type_Payment_Type_ID`) VALUES (4, 1.94, '72', 1530.76, 14);
+INSERT INTO `AutoNation`.`Loan` (`Loan_ID`, `Loan_Interest`, `Loan_Term`, `Loan_Downpayment`, `Payment_Type_Payment_Type_ID`) VALUES (5, 5.7, '60', 6815.1, 11);
+INSERT INTO `AutoNation`.`Loan` (`Loan_ID`, `Loan_Interest`, `Loan_Term`, `Loan_Downpayment`, `Payment_Type_Payment_Type_ID`) VALUES (6, 4.44, '72', 3572.29, 12);
+INSERT INTO `AutoNation`.`Loan` (`Loan_ID`, `Loan_Interest`, `Loan_Term`, `Loan_Downpayment`, `Payment_Type_Payment_Type_ID`) VALUES (7, 5.51, '72', 4693.81, 10);
+INSERT INTO `AutoNation`.`Loan` (`Loan_ID`, `Loan_Interest`, `Loan_Term`, `Loan_Downpayment`, `Payment_Type_Payment_Type_ID`) VALUES (8, 3.08, '72', 3059.4, 15);
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `AutoNation`.`Lease`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `AutoNation`;
+INSERT INTO `AutoNation`.`Lease` (`Lease_ID`, `Lease_Term`, `Lease_Miles`, `Lease_Downpayment`, `Lease_Residual`, `Payment_Type_Payment_Type_ID`) VALUES (1, '36', '10000', NULL, 40.62, 5);
+INSERT INTO `AutoNation`.`Lease` (`Lease_ID`, `Lease_Term`, `Lease_Miles`, `Lease_Downpayment`, `Lease_Residual`, `Payment_Type_Payment_Type_ID`) VALUES (2, '36', '12000', 2860.44, 63.51, 3);
+INSERT INTO `AutoNation`.`Lease` (`Lease_ID`, `Lease_Term`, `Lease_Miles`, `Lease_Downpayment`, `Lease_Residual`, `Payment_Type_Payment_Type_ID`) VALUES (3, '48', '15000', 6259.56, 44.99, 6);
+INSERT INTO `AutoNation`.`Lease` (`Lease_ID`, `Lease_Term`, `Lease_Miles`, `Lease_Downpayment`, `Lease_Residual`, `Payment_Type_Payment_Type_ID`) VALUES (4, '48', '12000', 1199.30, 36.32, 8);
+INSERT INTO `AutoNation`.`Lease` (`Lease_ID`, `Lease_Term`, `Lease_Miles`, `Lease_Downpayment`, `Lease_Residual`, `Payment_Type_Payment_Type_ID`) VALUES (5, '60', '12000', 1664.01, 70.46, 2);
+INSERT INTO `AutoNation`.`Lease` (`Lease_ID`, `Lease_Term`, `Lease_Miles`, `Lease_Downpayment`, `Lease_Residual`, `Payment_Type_Payment_Type_ID`) VALUES (6, '60', '10000', 6786.72, 59.25, 1);
+INSERT INTO `AutoNation`.`Lease` (`Lease_ID`, `Lease_Term`, `Lease_Miles`, `Lease_Downpayment`, `Lease_Residual`, `Payment_Type_Payment_Type_ID`) VALUES (7, '48', '15000', 3035.25, 55.86, 4);
+INSERT INTO `AutoNation`.`Lease` (`Lease_ID`, `Lease_Term`, `Lease_Miles`, `Lease_Downpayment`, `Lease_Residual`, `Payment_Type_Payment_Type_ID`) VALUES (8, '36', '15000', 1492.43, 57.48, 7);
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `AutoNation`.`Employee_Role`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `AutoNation`;
+INSERT INTO `AutoNation`.`Employee_Role` (`Employee_Role_ID`, `Employee_Role_Name`) VALUES (1, 'Salesman');
+INSERT INTO `AutoNation`.`Employee_Role` (`Employee_Role_ID`, `Employee_Role_Name`) VALUES (2, 'Manager');
+INSERT INTO `AutoNation`.`Employee_Role` (`Employee_Role_ID`, `Employee_Role_Name`) VALUES (3, 'Finance Manager');
+INSERT INTO `AutoNation`.`Employee_Role` (`Employee_Role_ID`, `Employee_Role_Name`) VALUES (4, 'Mechanic');
+INSERT INTO `AutoNation`.`Employee_Role` (`Employee_Role_ID`, `Employee_Role_Name`) VALUES (5, 'Representative');
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `AutoNation`.`Customer_Employee_Interaction`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `AutoNation`;
+INSERT INTO `AutoNation`.`Customer_Employee_Interaction` (`Customer_Employee_Interaction_ID`, `Customer_Customer_ID`, `Employee_Employee_ID`) VALUES (1, 1, 4);
+INSERT INTO `AutoNation`.`Customer_Employee_Interaction` (`Customer_Employee_Interaction_ID`, `Customer_Customer_ID`, `Employee_Employee_ID`) VALUES (2, 2, 13);
+INSERT INTO `AutoNation`.`Customer_Employee_Interaction` (`Customer_Employee_Interaction_ID`, `Customer_Customer_ID`, `Employee_Employee_ID`) VALUES (3, 3, 12);
+INSERT INTO `AutoNation`.`Customer_Employee_Interaction` (`Customer_Employee_Interaction_ID`, `Customer_Customer_ID`, `Employee_Employee_ID`) VALUES (4, 4, 5);
+INSERT INTO `AutoNation`.`Customer_Employee_Interaction` (`Customer_Employee_Interaction_ID`, `Customer_Customer_ID`, `Employee_Employee_ID`) VALUES (5, 5, 4);
+INSERT INTO `AutoNation`.`Customer_Employee_Interaction` (`Customer_Employee_Interaction_ID`, `Customer_Customer_ID`, `Employee_Employee_ID`) VALUES (6, 6, 3);
+INSERT INTO `AutoNation`.`Customer_Employee_Interaction` (`Customer_Employee_Interaction_ID`, `Customer_Customer_ID`, `Employee_Employee_ID`) VALUES (7, 7, 14);
+INSERT INTO `AutoNation`.`Customer_Employee_Interaction` (`Customer_Employee_Interaction_ID`, `Customer_Customer_ID`, `Employee_Employee_ID`) VALUES (8, 8, 2);
+INSERT INTO `AutoNation`.`Customer_Employee_Interaction` (`Customer_Employee_Interaction_ID`, `Customer_Customer_ID`, `Employee_Employee_ID`) VALUES (9, 9, 1);
+INSERT INTO `AutoNation`.`Customer_Employee_Interaction` (`Customer_Employee_Interaction_ID`, `Customer_Customer_ID`, `Employee_Employee_ID`) VALUES (10, 10, 13);
+INSERT INTO `AutoNation`.`Customer_Employee_Interaction` (`Customer_Employee_Interaction_ID`, `Customer_Customer_ID`, `Employee_Employee_ID`) VALUES (11, 1, 2);
+INSERT INTO `AutoNation`.`Customer_Employee_Interaction` (`Customer_Employee_Interaction_ID`, `Customer_Customer_ID`, `Employee_Employee_ID`) VALUES (12, 2, 12);
+INSERT INTO `AutoNation`.`Customer_Employee_Interaction` (`Customer_Employee_Interaction_ID`, `Customer_Customer_ID`, `Employee_Employee_ID`) VALUES (13, 3, 11);
+INSERT INTO `AutoNation`.`Customer_Employee_Interaction` (`Customer_Employee_Interaction_ID`, `Customer_Customer_ID`, `Employee_Employee_ID`) VALUES (14, 4, 10);
+INSERT INTO `AutoNation`.`Customer_Employee_Interaction` (`Customer_Employee_Interaction_ID`, `Customer_Customer_ID`, `Employee_Employee_ID`) VALUES (15, 5, 2);
+
+COMMIT;
+
+
+-- -----------------------------------------------------
+-- Data for table `AutoNation`.`Employee_has_Employee_Role`
+-- -----------------------------------------------------
+START TRANSACTION;
+USE `AutoNation`;
+INSERT INTO `AutoNation`.`Employee_has_Employee_Role` (`Employee_has_Employee_Role_ID`, `Employee_Employee_ID`, `Employee_Role_Employee_Role_ID`) VALUES (1, 1, 1);
+INSERT INTO `AutoNation`.`Employee_has_Employee_Role` (`Employee_has_Employee_Role_ID`, `Employee_Employee_ID`, `Employee_Role_Employee_Role_ID`) VALUES (2, 2, 1);
+INSERT INTO `AutoNation`.`Employee_has_Employee_Role` (`Employee_has_Employee_Role_ID`, `Employee_Employee_ID`, `Employee_Role_Employee_Role_ID`) VALUES (3, 3, 1);
+INSERT INTO `AutoNation`.`Employee_has_Employee_Role` (`Employee_has_Employee_Role_ID`, `Employee_Employee_ID`, `Employee_Role_Employee_Role_ID`) VALUES (4, 4, 1);
+INSERT INTO `AutoNation`.`Employee_has_Employee_Role` (`Employee_has_Employee_Role_ID`, `Employee_Employee_ID`, `Employee_Role_Employee_Role_ID`) VALUES (5, 5, 1);
+INSERT INTO `AutoNation`.`Employee_has_Employee_Role` (`Employee_has_Employee_Role_ID`, `Employee_Employee_ID`, `Employee_Role_Employee_Role_ID`) VALUES (6, 5, 2);
+INSERT INTO `AutoNation`.`Employee_has_Employee_Role` (`Employee_has_Employee_Role_ID`, `Employee_Employee_ID`, `Employee_Role_Employee_Role_ID`) VALUES (7, 6, 3);
+INSERT INTO `AutoNation`.`Employee_has_Employee_Role` (`Employee_has_Employee_Role_ID`, `Employee_Employee_ID`, `Employee_Role_Employee_Role_ID`) VALUES (8, 7, 3);
+INSERT INTO `AutoNation`.`Employee_has_Employee_Role` (`Employee_has_Employee_Role_ID`, `Employee_Employee_ID`, `Employee_Role_Employee_Role_ID`) VALUES (9, 8, 5);
+INSERT INTO `AutoNation`.`Employee_has_Employee_Role` (`Employee_has_Employee_Role_ID`, `Employee_Employee_ID`, `Employee_Role_Employee_Role_ID`) VALUES (10, 9, 5);
+INSERT INTO `AutoNation`.`Employee_has_Employee_Role` (`Employee_has_Employee_Role_ID`, `Employee_Employee_ID`, `Employee_Role_Employee_Role_ID`) VALUES (11, 10, 1);
+INSERT INTO `AutoNation`.`Employee_has_Employee_Role` (`Employee_has_Employee_Role_ID`, `Employee_Employee_ID`, `Employee_Role_Employee_Role_ID`) VALUES (12, 11, 1);
+INSERT INTO `AutoNation`.`Employee_has_Employee_Role` (`Employee_has_Employee_Role_ID`, `Employee_Employee_ID`, `Employee_Role_Employee_Role_ID`) VALUES (13, 12, 1);
+INSERT INTO `AutoNation`.`Employee_has_Employee_Role` (`Employee_has_Employee_Role_ID`, `Employee_Employee_ID`, `Employee_Role_Employee_Role_ID`) VALUES (14, 12, 3);
+INSERT INTO `AutoNation`.`Employee_has_Employee_Role` (`Employee_has_Employee_Role_ID`, `Employee_Employee_ID`, `Employee_Role_Employee_Role_ID`) VALUES (15, 13, 1);
+INSERT INTO `AutoNation`.`Employee_has_Employee_Role` (`Employee_has_Employee_Role_ID`, `Employee_Employee_ID`, `Employee_Role_Employee_Role_ID`) VALUES (16, 14, 1);
+INSERT INTO `AutoNation`.`Employee_has_Employee_Role` (`Employee_has_Employee_Role_ID`, `Employee_Employee_ID`, `Employee_Role_Employee_Role_ID`) VALUES (17, 15, 2);
+INSERT INTO `AutoNation`.`Employee_has_Employee_Role` (`Employee_has_Employee_Role_ID`, `Employee_Employee_ID`, `Employee_Role_Employee_Role_ID`) VALUES (18, 15, 3);
+
+COMMIT;
+
